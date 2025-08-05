@@ -1,0 +1,14 @@
+# .gitignore
+
+# Python
+venv/
+__pycache__/
+*.db
+*.sqlite3
+.env
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+.cursor/
