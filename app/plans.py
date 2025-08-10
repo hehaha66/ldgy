@@ -1,4 +1,4 @@
-# 文件: app/plans.py
+# 文件: app/plans.py (最终版本，已加入功能限制)
 
 import datetime
 import secrets
@@ -8,11 +8,53 @@ from . import models
 UNLIMITED = -1
 
 PLANS_CONFIG = {
-    "freemium": {"min_interval": 3.0, "max_codes": 20, "max_connections": 1, "api_access_level": "none"},
-    "pro": {"min_interval": 1.0, "max_codes": 50, "max_connections": 3, "api_access_level": "basic"},
-    "master": {"min_interval": 0.2, "max_codes": 500, "max_connections": 10, "api_access_level": "advanced"},
-    "admin": {"min_interval": 0.2, "max_codes": UNLIMITED, "max_connections": UNLIMITED, "api_access_level": "admin"}
+    # 免费版: 普通用户的基础限制
+    "freemium": {
+        "min_interval": 3.0,
+        "max_codes": 20,
+        "max_connections": 1,
+        "api_access_level": "none",
+        # --- 【新增】功能性限制 ---
+        "max_custom_indicators": 1,
+        "max_stock_groups": 1,
+        "max_alerts": 1,
+    },
+    # 专业版: 解除功能性限制
+    "pro": {
+        "min_interval": 1.0,
+        "max_codes": 50,
+        "max_connections": 3,
+        "api_access_level": "basic",
+        # --- 【新增】功能性限制 ---
+        "max_custom_indicators": UNLIMITED,
+        "max_stock_groups": UNLIMITED,
+        "max_alerts": UNLIMITED,
+    },
+    # 大师版: 解除功能性限制，并提供更高API配额
+    "master": {
+        "min_interval": 0.2,
+        "max_codes": 500,
+        "max_connections": 10,
+        "api_access_level": "advanced",
+        # --- 【新增】功能性限制 ---
+        "max_custom_indicators": UNLIMITED,
+        "max_stock_groups": UNLIMITED,
+        "max_alerts": UNLIMITED,
+    },
+    # 管理员: 完全无限制
+    "admin": {
+        "min_interval": 0.2,
+        "max_codes": UNLIMITED,
+        "max_connections": UNLIMITED,
+        "api_access_level": "admin",
+        # --- 【新增】功能性限制 ---
+        "max_custom_indicators": UNLIMITED,
+        "max_stock_groups": UNLIMITED,
+        "max_alerts": UNLIMITED,
+    }
 }
+
+# 价格配置保持不变
 PLANS_PRICING = {
     "pro": {"monthly": 30, "yearly": 365},
     "master": {"monthly": 30, "yearly": 365}
@@ -39,7 +81,7 @@ def grant_subscription(user: models.User, plan_name: str, duration_days: Optiona
 
 def reset_api_token(user: models.User) -> models.User:
     """
-    【新增】专门为用户生成一个新的、与其当前套餐匹配的 API Token。
+    专门为用户生成一个新的、与其当前套餐匹配的 API Token。
     """
     plan_prefix = "adm" if user.is_superuser else user.plan[:4]
     user.api_token = f"ldst_{plan_prefix}_{secrets.token_urlsafe(24)}"
@@ -52,7 +94,7 @@ def apply_plan_limits(user: models.User) -> models.User:
     如果套餐过期，只更新 plan 字段，不再触碰 token。
     """
     if user.is_superuser and user.plan != "admin":
-        user.plan = "admin"  # 确保超管的 plan 字段正确
+        user.plan = "admin"
 
     if user.expires_at and user.expires_at < datetime.datetime.utcnow() and not user.is_superuser:
         # 套餐过期，降级到免费版

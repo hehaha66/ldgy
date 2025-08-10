@@ -30,3 +30,16 @@ try:
 except (ValueError, TypeError) as e:
     logger.error(f"邮件服务配置失败: {e}. 请检查你的 .env 文件，特别是 MAIL_PORT。")
     fm = None # 如果配置失败，将 fm 设为 None
+
+
+import threading
+
+# 用于缓存每个查询组合的最后一次成功获取的数据
+# 键是市场代码字符串(如 '1.000001,0.00700')，值是获取到的数据列表
+LAST_KNOWN_GOOD_DATA = {}
+LAST_GOOD_DATA_LOCK = threading.Lock()
+
+# 用于跟踪每个用户的活动SSE连接数
+# 键是用户ID字符串(如 'USER_123')，值是该用户的当前连接数
+ACTIVE_CONNECTIONS = {}
+CONNECTION_LOCK = threading.Lock()
