@@ -263,3 +263,18 @@ async def codes_to_market_list_async(codes_str: str, timeout: float = 5.0) -> Di
 
 def get_field_mappings() -> Dict[str, str]:
     return AN_TO_FIELD_NAME_MAP
+
+
+async def get_stock_details_async(raw_code: str) -> Optional[Dict[str, Any]]:
+    """
+    获取单个股票的详细信息，包含其名称和完整的市场代码。
+    """
+    # 1. 先用 find_market_info_async 找到股票的准确市场代码
+    market_id_str = await find_market_info_async(raw_code)
+    if not market_id_str:
+        return None
+    stock_data_list = await fetch_stock_data_async(market_id_str)
+    if stock_data_list and isinstance(stock_data_list, list) and len(stock_data_list) > 0:
+        return stock_data_list[0]  # 返回第一条，也是唯一一条结果
+
+    return None

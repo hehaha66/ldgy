@@ -1,4 +1,5 @@
 # 文件: app/crud/user.py (最终清理版)
+from typing import Optional
 
 from sqlalchemy.orm import Session
 import datetime
@@ -98,4 +99,6 @@ def delete_verification_code(db: Session, email: str):
     # type: ignore
     db.query(models.VerificationCode).filter(models.VerificationCode.email == email).delete()
 
-# PEP 8: 文件末尾保留一个空行
+def get_user_by_api_token(db: Session, api_token: str) -> Optional[models.User]:
+    """通过 API Token 查找用户。"""
+    return db.query(models.User).filter(models.User.api_token == api_token).first()

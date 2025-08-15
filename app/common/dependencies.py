@@ -139,3 +139,22 @@ def get_user_from_header_or_query(
         raise APIException(code=status.HTTP_403_FORBIDDEN, msg="Inactive user")
 
     return plans.apply_plan_limits(user)
+
+
+def get_user_by_token_query(
+    token: str = Query(..., description="API Token for authenticating the SSE connection"),
+    db: Session = Depends(get_db)
+) -> models.User:
+    """
+    这是一个专用于SSE连接的依赖项，通过URL查询参数中必需的token进行认证。
+    """
+    if not token:
+        raise APIException(code=status.HTTP_401_UNAUTHORIZED, msg="API Token is missing for the stream.")
+
+    user = crud.user.get_user_by_api_token(db, api_token=token)
+    if not user:
+        raise APIException(code=status.HTTP_401_UNAUTHORIZED, msg="Invalid API Token for the stream.")
+    if not user.is_active:
+        raise APIException(code=status.HTTP_403_FORBIDDEN, msg="User is inactive.")
+
+    return plans.apply_plan_limits(user)

@@ -1,8 +1,12 @@
 # 文件: app/schemas.py
+
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 import datetime
 
+# ==================================
+#   您原有的、已验证正确的模型
+# ==================================
 class UserBase(BaseModel):
     email: EmailStr
 
@@ -13,21 +17,18 @@ class UserCreate(UserBase):
 
 class UserInfo(BaseModel):
     id: int
-    username: Optional[str] = None # 用户名在创建时可以是可选的
+    username: Optional[str] = None
     email: EmailStr
     is_active: bool
     is_superuser: bool
     plan: str
     expires_at: Optional[datetime.datetime] = None
     api_token: Optional[str] = None
-    nickname: Optional[str] = None # 将nickname添加到基础用户信息中，因为前端有用到
+    nickname: Optional[str] = None
 
     class Config:
-        from_attributes = True # Pydantic v2+ 使用 from_attributes 替代 orm_mode
+        from_attributes = True
 
-# --- 【新增】用于前端展示的、包含完整权限的用户模型 ---
-# UserOut 继承自 UserInfo，复用了所有基础字段
-# 并在此基础上，添加了所有必需的权限字段。
 class UserOut(UserInfo):
     min_interval: float
     max_codes: int
@@ -37,12 +38,11 @@ class UserOut(UserInfo):
     max_stock_groups: int
     max_alerts: int
 
-# --- 【重要修改】更新Token模型，使其在登录时返回完整的用户信息 ---
 class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
-    user_info: UserOut # <-- 重要修改：从 UserInfo 改为 UserOut
+    user_info: UserOut
 
 class SendCodeRequest(BaseModel):
     email: EmailStr
@@ -60,3 +60,42 @@ class UserAuthorizeUpdate(BaseModel):
 class SubscriptionRequest(BaseModel):
     plan: str
     duration: str
+
+# 文件: app/schemas.py (在末尾修正并替换)
+
+# ==========================================================
+#   为“王牌功能” (Workspace) 准备的Pydantic模型
+# ==========================================================
+
+# --- WorkspaceEntity ---
+# 【核心修正】确保这个创建模型存在
+class WorkspaceEntityCreate(BaseModel):
+    entity_type: str
+    name: str
+    definition: dict # 使用 dict 替代 Dict[str, Any] 更简洁
+
+# 这个模型用于API返回单个实体的信息
+class WorkspaceEntityOut(BaseModel):
+    id: int
+    entity_type: str
+    name: str
+    definition: dict
+    display_order: int
+
+    class Config:
+        from_attributes = True
+
+# --- MonitorWorkspace ---
+# 创建工作区时，前端只需要提供一个名字
+class MonitorWorkspaceCreate(BaseModel):
+    name: str
+
+# 从API返回工作区信息时，我们希望包含其内部的所有实体
+class MonitorWorkspaceOut(BaseModel):
+    id: int
+    name: str
+    is_active: bool
+    entities: List[WorkspaceEntityOut] = []
+
+    class Config:
+        from_attributes = True

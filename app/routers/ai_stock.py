@@ -29,7 +29,7 @@ def check_permissions(user: User):
     """
     检查用户的AI选股权限和速率限制。
     """
-    if not user.is_superuser:
+    if user.is_superuser:
         return
 
     if user.plan in ["pro", "master"]:

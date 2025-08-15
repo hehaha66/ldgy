@@ -14,10 +14,10 @@ PLANS_CONFIG = {
         "max_codes": 20,
         "max_connections": 1,
         "api_access_level": "none",
-        # --- 【新增】功能性限制 ---
         "max_custom_indicators": 1,
         "max_stock_groups": 1,
         "max_alerts": 1,
+        "max_workspaces": 1
     },
     # 专业版: 解除功能性限制
     "pro": {
@@ -29,6 +29,8 @@ PLANS_CONFIG = {
         "max_custom_indicators": UNLIMITED,
         "max_stock_groups": UNLIMITED,
         "max_alerts": UNLIMITED,
+        "max_workspaces": UNLIMITED
+
     },
     # 大师版: 解除功能性限制，并提供更高API配额
     "master": {
@@ -40,6 +42,7 @@ PLANS_CONFIG = {
         "max_custom_indicators": UNLIMITED,
         "max_stock_groups": UNLIMITED,
         "max_alerts": UNLIMITED,
+        "max_workspaces": UNLIMITED
     },
     # 管理员: 完全无限制
     "admin": {
@@ -51,6 +54,7 @@ PLANS_CONFIG = {
         "max_custom_indicators": UNLIMITED,
         "max_stock_groups": UNLIMITED,
         "max_alerts": UNLIMITED,
+        "max_workspaces": UNLIMITED
     }
 }
 
